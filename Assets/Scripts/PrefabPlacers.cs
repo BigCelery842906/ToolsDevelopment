@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PrefabPlacer : MonoBehaviour
+public class PrefabPlacers : MonoBehaviour
 {
     [SerializeField] private float Val1 = 1.0f;
     [SerializeField] private float Val2 = 2.0f;

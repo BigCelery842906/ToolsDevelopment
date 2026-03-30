@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(PrefabPlacer))]
+[CustomEditor(typeof(PrefabPlacers))]
 public class PrefabEditor : Editor
 {
     private SerializedProperty val1Property;
