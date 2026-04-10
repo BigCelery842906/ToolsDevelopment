@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem.Composites;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 // Found tutorial here: https://medium.com/xrpractices/building-a-custom-editor-window-in-unity-5b8a1378e734
@@ -11,11 +13,36 @@ using UnityEngine.UIElements;
 
 public class PrefabPlacer : EditorWindow
 {
-    [SerializeField]
+    // Plan
+    // Add list of GameObjects that can be placed
+    // Toggle for each gameobject that changes whether it is currently able to be placed - Ideally in line with the gameobjects
+    // Min and Max Angle for gameobjects to be placed on - Stretch is to have this per GO
+    // Toggle for whether the GO will aim to match the normal of the object its being placed on - Might have to look into whether this is possible without loads of complex maths
+    // Density of objects
+    // Size of Brush
+
+
+    [SerializeField] private List<GameObject> prefabs;
+    [SerializeField] private List<Toggle> toggles;
+
+    // [Range(0, 100f)] [SerializeField] private float brushSize;
+    RangeAttribute brushSize = new RangeAttribute(0.0f, 100.0f);
+
+    [Range(0.0f, 360.0f)] [SerializeField] private float minBrushAngle;
+    [Range(0.0f, 360.0f)] [SerializeField] private float maxBrushAngle;
+
+    [Range(0.0f, 100f)] [SerializeField] private float densityOfObjects;
+    
+    
+    
+    
+    
+    
     // private VisualTreeAsset m_VisualTreeAsset = default;
 
     // Values that can change
-    private bool drawPrefabs = false;
+    private bool drawingPrefabs = false;
+    
     
     
     
@@ -43,49 +70,49 @@ public class PrefabPlacer : EditorWindow
         // root.Add(labelFromUXML);
         
         
-        Button draw = new Button();
-        draw.name = "DrawButton";
-        draw.text = "Draw";
-        draw.clicked += OnDrawClick;
-        root.Add(draw);
+        Button paintButton = new Button();
+        paintButton.name = "Paint Button";
+        paintButton.text = "Enable Painting";
+        paintButton.clicked += OnDrawClick;
+        root.Add(paintButton);
 
+        // SpaceAttribute(5.0f);
+
+        Toggle toggleButton = new Toggle();
+        toggleButton.name = "Toggle Toggle";
+        toggleButton.text = "Enable Toggle";
+        root.Add(toggleButton);
         
-
-
-    }
-
-    private void OnGUI()
-    {
-        GUILayout.Space(100);
-        
-        bool isPainting = false;
-        if (GUILayout.Toggle(isPainting, "Enable Painting", "Button") != isPainting)
+        var listView = new ListView(prefabs, 20, () => new Label(), (element, i) =>
         {
-            isPainting = !isPainting;
-        }
+            (element as Label).text = prefabs[i] ? prefabs[i].name : "None";
+        });
+        root.Add(listView);
+        
     }
+
+    // private void OnGUI()
+    // {
+    //     GUILayout.Space(100);
+    //     
+    //     bool isPainting = false;
+    //     if (GUILayout.Toggle(isPainting, "Enable Painting", "Button") != isPainting)
+    //     {
+    //         isPainting = !isPainting;
+    //     }
+    // }
 
     void OnDrawClick()
     {
-        drawPrefabs = !drawPrefabs;
+        drawingPrefabs = !drawingPrefabs;
 
-        var button = rootVisualElement.Q<Button>("DrawButton");
+        var button = rootVisualElement.Q<Button>("Paint Button");
         
-        // button.style.backgroundColor = drawPrefabs ? Color.green : Color.red;
-
-        if (drawPrefabs)
-        {
-            Color color = new Color(70, 115, 105);
-            button.style.backgroundColor = color;
-            // Color color = new Color(0.5, 0.6, 0.2, 255);
-            // color = new Color()
-        }
-        else
-        {
-            //Default Unity Grey
-            button.style.backgroundColor = Color.gray;
-            // button.style.backgroundColor = new Color(88,88,88, 255);
-        }
-        Debug.Log("DRAW BUTTON CLICKED: Set to " + drawPrefabs);
+        Color trueColour = new Color32(70, 115, 105, 255);
+        Color falseColour = new Color32(88, 88, 88, 255);
+        button.style.backgroundColor = drawingPrefabs ? trueColour : falseColour;
+        
+        
+        Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
     }
 }
