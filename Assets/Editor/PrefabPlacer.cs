@@ -33,6 +33,8 @@ public class PrefabPlacer : EditorWindow
 
     [Range(0.0f, 100f)] [SerializeField] private float densityOfObjects;
     
+    private bool randomRotation = true;
+    
     
     
     
@@ -48,7 +50,7 @@ public class PrefabPlacer : EditorWindow
     
     
     
-    [MenuItem("CS Tool/Prefab Placer")]
+    [MenuItem("Tools/Prefab Placer")]
     public static void ShowWindow()
     {
         PrefabPlacer prefabPlacerWindow = GetWindow<PrefabPlacer>();
@@ -111,6 +113,7 @@ public class PrefabPlacer : EditorWindow
         Color trueColour = new Color32(70, 115, 105, 255);
         Color falseColour = new Color32(88, 88, 88, 255);
         button.style.backgroundColor = drawingPrefabs ? trueColour : falseColour;
+        
         
         
         Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
