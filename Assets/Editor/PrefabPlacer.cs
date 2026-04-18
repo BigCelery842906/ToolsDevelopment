@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -32,19 +33,9 @@ public class PrefabPlacer : EditorWindow
     
     private bool randomRotation = true;
     
-    
-    
-    
-    
-    
-    // private VisualTreeAsset m_VisualTreeAsset = default;
 
     // Values that can change
     private bool drawingPrefabs = false;
-    
-    
-    
-    
     
     
     [MenuItem("Tools/Prefab Placer")]
@@ -120,22 +111,41 @@ public class PrefabPlacer : EditorWindow
 
     private void OnGUI()
     {
+        GUILayout.Label("Prefab Placer", EditorStyles.boldLabel);
+        
+        #region Number of Prefabs
+        int numOfPrefabs = prefabs.Count;
+        numOfPrefabs = EditorGUILayout.IntField("Number of Prefabs", numOfPrefabs);
+        if (prefabs.Count != numOfPrefabs)
+        {
+            for (int i = prefabs.Count; i < numOfPrefabs; i++)
+            {
+                AddNewObject();
+            }
+            //Where there are more prefabs in the prefabs list than in NumOfPrefabs, remove down to that amount.
+            //Remove the last one in the list until the specified amount has been reached
+
+            while (prefabs.Count > numOfPrefabs)
+            {
+                RemoveObject(prefabs.Count - 1);
+            }
+        }
+        #endregion
+
+        if (GUILayout.Button("Add Prefab"))
+        {
+            AddNewObject();
+        }
+        
         if (prefabs.Count > 0)
         {
             for (int i = 0; i < prefabs.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-
-                if (GUILayout.Button("X", GUILayout.Width(20)))
-                {
-                    prefabs.RemoveAt(i);
-                }
-
-                // This doesn't appear to work
-                // if (GUILayout.Toggle(toggles[i], ""))
-                string buttonText = toggles[i].ToString();
                 
-                if (buttonText == "False")
+                string buttonText = "";
+                
+                if (!toggles[i])
                 {
                     buttonText = "Enable";
                 }
@@ -146,44 +156,63 @@ public class PrefabPlacer : EditorWindow
                 if (GUILayout.Button(buttonText, GUILayout.Width(70)))
                 {
                     //Do enable tag on this prefab
-                    bool cur = toggles[i];
-                    Debug.Log(cur);
                     toggles[i] = !toggles[i];
-                    Debug.Log("Toggle Button: " + i);
+                    Debug.Log("Toggle Button: " + i + " set to: " + toggles[i] );
                 }
 
-                prefabs[i] = (GameObject)EditorGUILayout.ObjectField(prefabs[i], typeof(GameObject), false);
+                prefabs[i] = (GameObject)EditorGUILayout.ObjectField(prefabs[i], typeof(GameObject), false, GUILayout.Width(200), GUILayout.ExpandWidth(true));
 
+                
+                if (GUILayout.Button("X", GUILayout.Width(20)))
+                {
+                    Debug.Log("Removing item:" + i);
+                    RemoveObject(i);
+                }
                 EditorGUILayout.EndHorizontal();
             }
         }
-
-        if (GUILayout.Button("Add Prefab"))
-        {
-            prefabs.Add(null);
-            toggles.Add(true);
-        }
         
-        // bool should = GUILayout.Button("Add Toggle", "Button");
+        Color trueColour = new Color32(70, 115, 105, 255);
+        Color falseColour = Color.white;
+        
+        GUI.backgroundColor = drawingPrefabs ? trueColour : falseColour;
         bool shouldPaint = GUILayout.Toggle(drawingPrefabs, "Enable Painting", "Button"); //Need to do the background colour change thing
         if (shouldPaint != drawingPrefabs)
         {
             OnDrawClick();
         }
+        GUI.backgroundColor = Color.white; // Reset to default colour, otherwise it will draw with the true colour.
+        
+        // This is used just to check that the gui stops drawing with the true colour
+        // if (GUILayout.Button("X", GUILayout.Width(20)))
+        // {
+        //     Debug.Log("Removing item:" + 1);
+        //     RemoveObject(1);
+        // }
     }
 
     void OnDrawClick()
     {
         drawingPrefabs = !drawingPrefabs;
-
-        var button = rootVisualElement.Q<Button>("Button");
-        
-        Color trueColour = new Color32(70, 115, 105, 255);
-        Color falseColour = new Color32(88, 88, 88, 255);
-        button.style.backgroundColor = drawingPrefabs ? trueColour : falseColour;
-        
-        
+        //
+        // var button = rootVisualElement.Q<Button>("Button");
+        //
+        // Color trueColour = new Color32(70, 115, 105, 255);
+        // Color falseColour = new Color32(88, 88, 88, 255);
+        // button.style.backgroundColor = drawingPrefabs ? trueColour : falseColour;
         
         Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
+    }
+
+    void AddNewObject()
+    {
+        prefabs.Add(null);
+        toggles.Add(true);
+    }
+
+    void RemoveObject(int position)
+    {
+        prefabs.RemoveAt(position);
+        toggles.RemoveAt(position);
     }
 }
