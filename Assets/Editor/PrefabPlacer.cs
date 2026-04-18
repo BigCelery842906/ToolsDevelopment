@@ -132,12 +132,23 @@ public class PrefabPlacer : EditorWindow
                 }
 
                 // This doesn't appear to work
-                if (GUILayout.Toggle(true, ""))
+                // if (GUILayout.Toggle(toggles[i], ""))
+                string buttonText = toggles[i].ToString();
+                
+                if (buttonText == "False")
+                {
+                    buttonText = "Enable";
+                }
+                else
+                {
+                    buttonText = "Disable";
+                }
+                if (GUILayout.Button(buttonText, GUILayout.Width(70)))
                 {
                     //Do enable tag on this prefab
                     bool cur = toggles[i];
                     Debug.Log(cur);
-                    toggles[i] = !cur;
+                    toggles[i] = !toggles[i];
                     Debug.Log("Toggle Button: " + i);
                 }
 
@@ -153,9 +164,9 @@ public class PrefabPlacer : EditorWindow
             toggles.Add(true);
         }
         
-        bool should = GUILayout.Button("Add Toggle", "Button");
+        // bool should = GUILayout.Button("Add Toggle", "Button");
         bool shouldPaint = GUILayout.Toggle(drawingPrefabs, "Enable Painting", "Button"); //Need to do the background colour change thing
-        if (should != drawingPrefabs)
+        if (shouldPaint != drawingPrefabs)
         {
             OnDrawClick();
         }
