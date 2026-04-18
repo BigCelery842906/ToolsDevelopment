@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.InputSystem.Composites;
-using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 // Found tutorial here: https://medium.com/xrpractices/building-a-custom-editor-window-in-unity-5b8a1378e734
@@ -22,8 +19,8 @@ public class PrefabPlacer : EditorWindow
     // Size of Brush
 
 
-    [SerializeField] private List<GameObject> prefabs;
-    [SerializeField] private List<Toggle> toggles;
+    [SerializeField] private List<GameObject> prefabs =  new List<GameObject>();
+    [SerializeField] private List<bool> toggles =  new List<bool>();
 
     // [Range(0, 100f)] [SerializeField] private float brushSize;
     RangeAttribute brushSize = new RangeAttribute(0.0f, 100.0f);
@@ -58,57 +55,117 @@ public class PrefabPlacer : EditorWindow
         prefabPlacerWindow.titleContent = new GUIContent("Prefab Placer Tool", icon);
     }
 
-    public void CreateGUI()
-    {
-        // Each editor window contains a root VisualElement object
-        VisualElement root = rootVisualElement;
-
-        // VisualElements objects can contain other VisualElement following a tree hierarchy.
-        VisualElement label = new Label("Hello World! From C#");
-        root.Add(label);
-
-        // // Instantiate UXML
-        // VisualElement labelFromUXML = m_VisualTreeAsset.Instantiate();
-        // root.Add(labelFromUXML);
-        
-        
-        Button paintButton = new Button();
-        paintButton.name = "Paint Button";
-        paintButton.text = "Enable Painting";
-        paintButton.clicked += OnDrawClick;
-        root.Add(paintButton);
-
-        // SpaceAttribute(5.0f);
-
-        Toggle toggleButton = new Toggle();
-        toggleButton.name = "Toggle Toggle";
-        toggleButton.text = "Enable Toggle";
-        root.Add(toggleButton);
-        
-        var listView = new ListView(prefabs, 20, () => new Label(), (element, i) =>
-        {
-            (element as Label).text = prefabs[i] ? prefabs[i].name : "None";
-        });
-        root.Add(listView);
-        
-    }
-
-    // private void OnGUI()
+    // public void CreateGUI()
     // {
-    //     GUILayout.Space(100);
+    //     // Each editor window contains a root VisualElement object
+    //     VisualElement root = rootVisualElement;
+    //
+    //     // VisualElements objects can contain other VisualElement following a tree hierarchy.
+    //     VisualElement label = new Label("Hello World! From C#");
+    //     root.Add(label);
+    //
+    //     // // Instantiate UXML
+    //     // VisualElement labelFromUXML = m_VisualTreeAsset.Instantiate();
+    //     // root.Add(labelFromUXML);
     //     
-    //     bool isPainting = false;
-    //     if (GUILayout.Toggle(isPainting, "Enable Painting", "Button") != isPainting)
+    //     
+    //     Button paintButton = new Button();
+    //     paintButton.name = "Paint Button";
+    //     paintButton.text = "Enable Painting";
+    //     paintButton.clicked += OnDrawClick;
+    //     root.Add(paintButton);
+    //
+    //     // SpaceAttribute(5.0f);
+    //
+    //     Toggle toggleButton = new Toggle();
+    //     toggleButton.name = "Toggle Toggle";
+    //     toggleButton.text = "Enable Toggle";
+    //     root.Add(toggleButton);
+    //     
+    //     var listView = new ListView(prefabs, 20, () => new Label(), (element, i) =>
     //     {
-    //         isPainting = !isPainting;
+    //         (element as Label).text = prefabs[i] ? prefabs[i].name : "None";
+    //     });
+    //     root.Add(listView);
+    //     
+    //     
+    //     int removeIndex = -1;
+    //
+    //     for (int i = 0; i < prefabs.Count; i++)
+    //     {
+    //         EditorGUILayout.BeginHorizontal();
+    //         if (GUILayout.Button("X", GUILayout.Width(20)))
+    //             removeIndex = i;
+    //
+    //         if (GUILayout.Toggle(true, ""))
+    //         {
+    //             Debug.Log("Enabled");
+    //         }
+    //         prefabs[i] = (GameObject)EditorGUILayout.ObjectField(prefabs[i], typeof(GameObject), false);
+    //
+    //         
+    //
+    //         EditorGUILayout.EndHorizontal();
     //     }
+    //
+    //     if (removeIndex >= 0)
+    //         prefabs.RemoveAt(removeIndex);
+    //
+    //     if (GUILayout.Button("Add Prefab"))
+    //         prefabs.Add(null);
+    //
+    //     GUILayout.Space(10);
+    //     
     // }
+
+    private void OnGUI()
+    {
+        if (prefabs.Count > 0)
+        {
+            for (int i = 0; i < prefabs.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+
+                if (GUILayout.Button("X", GUILayout.Width(20)))
+                {
+                    prefabs.RemoveAt(i);
+                }
+
+                // This doesn't appear to work
+                if (GUILayout.Toggle(true, ""))
+                {
+                    //Do enable tag on this prefab
+                    bool cur = toggles[i];
+                    Debug.Log(cur);
+                    toggles[i] = !cur;
+                    Debug.Log("Toggle Button: " + i);
+                }
+
+                prefabs[i] = (GameObject)EditorGUILayout.ObjectField(prefabs[i], typeof(GameObject), false);
+
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        if (GUILayout.Button("Add Prefab"))
+        {
+            prefabs.Add(null);
+            toggles.Add(true);
+        }
+        
+        bool should = GUILayout.Button("Add Toggle", "Button");
+        bool shouldPaint = GUILayout.Toggle(drawingPrefabs, "Enable Painting", "Button"); //Need to do the background colour change thing
+        if (should != drawingPrefabs)
+        {
+            OnDrawClick();
+        }
+    }
 
     void OnDrawClick()
     {
         drawingPrefabs = !drawingPrefabs;
 
-        var button = rootVisualElement.Q<Button>("Paint Button");
+        var button = rootVisualElement.Q<Button>("Button");
         
         Color trueColour = new Color32(70, 115, 105, 255);
         Color falseColour = new Color32(88, 88, 88, 255);
