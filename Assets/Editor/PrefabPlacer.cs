@@ -42,15 +42,16 @@ public class PrefabPlacer : EditorWindow
 
     #region valuesForHorizontalSpacing
 
-    private static float assetNumSpacing = 50f;
+    private static float assetNumSpacing = 70f;
     private static float enableButtonSpacing = 70f;
     private static float gameObjectSpacing = 200f;
     private static float deleteSpacing = 20f;
 
-    private static float minWidth = assetNumSpacing + enableButtonSpacing + deleteSpacing + gameObjectSpacing + 20;
+    private static float minWidth = assetNumSpacing + enableButtonSpacing + deleteSpacing + gameObjectSpacing + 40;
 
     #endregion
 
+    Vector2 scrollPos = new Vector2();
 
     [MenuItem("Tools/Prefab Placer")]
     public static void ShowWindow()
@@ -140,14 +141,15 @@ public class PrefabPlacer : EditorWindow
          
          minBrushAngle = EditorGUILayout.FloatField("Minimum Brush Angle", minBrushAngle);
          minBrushAngle = (minBrushAngle + 360.0f) % 360.0f;
-         minBrushAngle = Mathf.Clamp(minBrushAngle, 0.0f, maxBrushAngle);
+         minBrushAngle = Mathf.Clamp(minBrushAngle, 0.0f, 360.0f);
          
          maxBrushAngle = EditorGUILayout.FloatField("Maximum Brush Angle", maxBrushAngle);
          maxBrushAngle = (maxBrushAngle + 360.0f) % 360.0f;
-         maxBrushAngle = Mathf.Clamp(maxBrushAngle, minBrushAngle, 360.0f);
+         maxBrushAngle = Mathf.Clamp(maxBrushAngle, 0.0f, 360.0f);
          
         EditorGUILayout.MinMaxSlider("Brush Angle", ref minBrushAngle, ref maxBrushAngle, 0.0f, 360.0f);
         
+        // TODO: Figure out how I can do this such that it can go from somewhere like 270 to 30, where I want from 271 to 29 filled in, rather than the other way round.
         
         randomRotation = EditorGUILayout.ToggleLeft("Random Rotation", randomRotation);
         #endregion
@@ -181,6 +183,8 @@ public class PrefabPlacer : EditorWindow
         
         if (prefabs.Count > 0)
         {
+            
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
             for (int i = 0; i < prefabs.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -216,6 +220,8 @@ public class PrefabPlacer : EditorWindow
                 }
                 EditorGUILayout.EndHorizontal();
             }
+            
+            EditorGUILayout.EndScrollView();
         }
         
         Color trueColour = new Color32(70, 115, 105, 255);
