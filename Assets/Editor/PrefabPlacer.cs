@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.UIElements;
 
 // Found tutorial here: https://medium.com/xrpractices/building-a-custom-editor-window-in-unity-5b8a1378e734
@@ -20,33 +21,47 @@ public class PrefabPlacer : EditorWindow
     // Size of Brush
 
 
-    [SerializeField] private List<GameObject> prefabs =  new List<GameObject>();
-    [SerializeField] private List<bool> toggles =  new List<bool>();
+    [SerializeField] private List<GameObject> prefabs = new List<GameObject>();
+    [SerializeField] private List<bool> toggles = new List<bool>();
 
     // [Range(0, 100f)] [SerializeField] private float brushSize;
-    RangeAttribute brushSize = new RangeAttribute(0.0f, 100.0f);
+    private float brushSize = 5f;
 
     [Range(0.0f, 360.0f)] [SerializeField] private float minBrushAngle;
     [Range(0.0f, 360.0f)] [SerializeField] private float maxBrushAngle;
 
     [Range(0.0f, 100f)] [SerializeField] private float densityOfObjects;
-    
+
     private bool randomRotation = true;
     
-
+    //TODO: Maybe a bool that determines whether the object follows the normal of the object? - Look into how that would work
+    
     // Values that can change
     private bool drawingPrefabs = false;
-    
-    
+
+
+    #region valuesForHorizontalSpacing
+
+    private static float assetNumSpacing = 50f;
+    private static float enableButtonSpacing = 70f;
+    private static float gameObjectSpacing = 200f;
+    private static float deleteSpacing = 20f;
+
+    private static float minWidth = assetNumSpacing + enableButtonSpacing + deleteSpacing + gameObjectSpacing + 20;
+
+    #endregion
+
+
     [MenuItem("Tools/Prefab Placer")]
     public static void ShowWindow()
     {
         PrefabPlacer prefabPlacerWindow = GetWindow<PrefabPlacer>();
-        var icon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/icon.jpg");
+        prefabPlacerWindow.minSize = new Vector2(minWidth, 100f);
+        
+        Texture icon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/icon.jpg");
         prefabPlacerWindow.titleContent = new GUIContent("Prefab Placer Tool", icon);
     }
-
-    // public void CreateGUI()
+// public void CreateGUI()
     // {
     //     // Each editor window contains a root VisualElement object
     //     VisualElement root = rootVisualElement;
@@ -113,6 +128,31 @@ public class PrefabPlacer : EditorWindow
     {
         GUILayout.Label("Prefab Placer", EditorStyles.boldLabel);
         
+        #region The Changeable Values
+        
+         // min and max brush angle
+         // density of objects
+         // brush size
+         // random rotation
+         
+         brushSize = EditorGUILayout.FloatField("Brush Size", brushSize);
+         brushSize = Mathf.Clamp(brushSize, 0.0f, 100.0f);
+         
+         minBrushAngle = EditorGUILayout.FloatField("Minimum Brush Angle", minBrushAngle);
+         minBrushAngle = (minBrushAngle + 360.0f) % 360.0f;
+         minBrushAngle = Mathf.Clamp(minBrushAngle, 0.0f, maxBrushAngle);
+         
+         maxBrushAngle = EditorGUILayout.FloatField("Maximum Brush Angle", maxBrushAngle);
+         maxBrushAngle = (maxBrushAngle + 360.0f) % 360.0f;
+         maxBrushAngle = Mathf.Clamp(maxBrushAngle, minBrushAngle, 360.0f);
+         
+        EditorGUILayout.MinMaxSlider("Brush Angle", ref minBrushAngle, ref maxBrushAngle, 0.0f, 360.0f);
+        
+        
+        randomRotation = EditorGUILayout.ToggleLeft("Random Rotation", randomRotation);
+        #endregion
+        
+        
         #region Number of Prefabs
         int numOfPrefabs = prefabs.Count;
         numOfPrefabs = EditorGUILayout.IntField("Number of Prefabs", numOfPrefabs);
@@ -137,12 +177,16 @@ public class PrefabPlacer : EditorWindow
             AddNewObject();
         }
         
+        //TODO: Probably worth being in a scrollview to be honest. Look into that: https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-uxml-element-ScrollView.html
+        
         if (prefabs.Count > 0)
         {
             for (int i = 0; i < prefabs.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
                 
+                
+                //TODO: Does this want to be a toggle value
                 string buttonText = "";
                 
                 if (!toggles[i])
@@ -153,17 +197,19 @@ public class PrefabPlacer : EditorWindow
                 {
                     buttonText = "Disable";
                 }
-                if (GUILayout.Button(buttonText, GUILayout.Width(70)))
+                
+                GUILayout.Label("Asset: " + (i + 1), GUILayout.Width(assetNumSpacing));
+                if (GUILayout.Button(buttonText, GUILayout.Width(enableButtonSpacing)))
                 {
                     //Do enable tag on this prefab
                     toggles[i] = !toggles[i];
                     Debug.Log("Toggle Button: " + i + " set to: " + toggles[i] );
                 }
 
-                prefabs[i] = (GameObject)EditorGUILayout.ObjectField(prefabs[i], typeof(GameObject), false, GUILayout.Width(200), GUILayout.ExpandWidth(true));
+                prefabs[i] = (GameObject)EditorGUILayout.ObjectField(prefabs[i], typeof(GameObject), false, GUILayout.Width(gameObjectSpacing), GUILayout.ExpandWidth(true));
 
                 
-                if (GUILayout.Button("X", GUILayout.Width(20)))
+                if (GUILayout.Button("X", GUILayout.Width(deleteSpacing)))
                 {
                     Debug.Log("Removing item:" + i);
                     RemoveObject(i);
