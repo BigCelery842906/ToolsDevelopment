@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.TerrainTools;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.UIElements;
@@ -24,6 +26,7 @@ public class PrefabPlacer : EditorWindow
     [SerializeField] private List<GameObject> prefabs = new List<GameObject>();
     [SerializeField] private List<bool> toggles = new List<bool>();
 
+    private int maxObjects = 50;
     // [Range(0, 100f)] [SerializeField] private float brushSize;
     private float brushSize = 5f;
 
@@ -61,8 +64,15 @@ public class PrefabPlacer : EditorWindow
         
         Texture icon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/icon.jpg");
         prefabPlacerWindow.titleContent = new GUIContent("Prefab Placer Tool", icon);
+        
     }
-// public void CreateGUI()
+
+    private void OnEnable()
+    {
+        SceneView.duringSceneGui += OnSceneGUI;
+    }
+
+    // public void CreateGUI()
     // {
     //     // Each editor window contains a root VisualElement object
     //     VisualElement root = rootVisualElement;
@@ -127,6 +137,7 @@ public class PrefabPlacer : EditorWindow
 
     private void OnGUI()
     {
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
         GUILayout.Label("Prefab Placer", EditorStyles.boldLabel);
         
         #region The Changeable Values
@@ -158,6 +169,7 @@ public class PrefabPlacer : EditorWindow
         #region Number of Prefabs
         int numOfPrefabs = prefabs.Count;
         numOfPrefabs = EditorGUILayout.IntField("Number of Prefabs", numOfPrefabs);
+        Mathf.Clamp(numOfPrefabs, 0, maxObjects);
         if (prefabs.Count != numOfPrefabs)
         {
             for (int i = prefabs.Count; i < numOfPrefabs; i++)
@@ -184,7 +196,6 @@ public class PrefabPlacer : EditorWindow
         if (prefabs.Count > 0)
         {
             
-            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
             for (int i = 0; i < prefabs.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -221,7 +232,7 @@ public class PrefabPlacer : EditorWindow
                 EditorGUILayout.EndHorizontal();
             }
             
-            EditorGUILayout.EndScrollView();
+         
         }
         
         Color trueColour = new Color32(70, 115, 105, 255);
@@ -241,6 +252,7 @@ public class PrefabPlacer : EditorWindow
         //     Debug.Log("Removing item:" + 1);
         //     RemoveObject(1);
         // }
+        EditorGUILayout.EndScrollView();
     }
 
     void OnDrawClick()
@@ -254,10 +266,29 @@ public class PrefabPlacer : EditorWindow
         // button.style.backgroundColor = drawingPrefabs ? trueColour : falseColour;
         
         Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
+
+        while (drawingPrefabs)
+        {
+            Vector3 mousePosition = Event.current.mousePosition;
+            Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
+            
+            Vector3 pos = ray.origin + (ray.direction * 10);
+            
+            Debug.Log(ray + ": " + pos);
+            // HandleUtility.GUIPointToWorldRay()
+            // Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            // Debug.Log(mousePos);
+        }
     }
 
     void AddNewObject()
     {
+        if (prefabs.Count >= maxObjects) //Prevent stupid numbers from being reached
+        {
+            Debug.LogWarning("Max Objects Reached");
+            return;
+        }
+        
         prefabs.Add(null);
         toggles.Add(true);
     }
@@ -267,4 +298,11 @@ public class PrefabPlacer : EditorWindow
         prefabs.RemoveAt(position);
         toggles.RemoveAt(position);
     }
+
+    static void OnSceneGUI(SceneView sceneView)
+    {
+        
+    }
+    
+    
 }
