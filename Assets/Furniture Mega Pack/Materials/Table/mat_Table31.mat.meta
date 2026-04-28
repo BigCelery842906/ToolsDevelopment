@@ -1,7 +1,8 @@
 fileFormatVersion: 2
-guid: 8305f1152890bc847865923e1e39533e
-PrefabImporter:
+guid: 77c4ad7ba8d94794cb48dca4d728891e
+NativeFormatImporter:
   externalObjects: {}
+  mainObjectFileID: 2100000
   userData: 
   assetBundleName: 
   assetBundleVariant: 
@@ -10,5 +11,5 @@ AssetOrigin:
   productId: 330002
   packageName: Furniture Mega Pack - Free
   packageVersion: 1.0
-  assetPath: Assets/Furniture Mega Pack/Prefabs/Chairs/Chair48.prefab
+  assetPath: Assets/Furniture Mega Pack/Materials/Table/mat_Table31.mat
   uploadId: 785398

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 8305f1152890bc847865923e1e39533e
+guid: cbecd5d06fbf2ce4bbc56357981ff476
 PrefabImporter:
   externalObjects: {}
   userData: 
@@ -10,5 +10,5 @@ AssetOrigin:
   productId: 330002
   packageName: Furniture Mega Pack - Free
   packageVersion: 1.0
-  assetPath: Assets/Furniture Mega Pack/Prefabs/Chairs/Chair48.prefab
+  assetPath: Assets/Furniture Mega Pack/Prefabs/Bathroom/Toilet07.prefab
   uploadId: 785398
