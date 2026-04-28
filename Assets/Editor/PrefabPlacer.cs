@@ -25,6 +25,7 @@ public class PrefabPlacer : EditorWindow
 
     [SerializeField] private List<GameObject> prefabs = new List<GameObject>();
     [SerializeField] private List<bool> toggles = new List<bool>();
+    private int activeObjects = 0;
 
     private int maxObjects = 50;
     // [Range(0, 100f)] [SerializeField] private float brushSize;
@@ -67,10 +68,17 @@ public class PrefabPlacer : EditorWindow
         
     }
 
+    #region OnGUI
     private void OnEnable()
     {
         SceneView.duringSceneGui += OnSceneGUI;
     }
+
+    private void OnDisable()
+    {
+        SceneView.duringSceneGui -= OnSceneGUI;
+    }
+    #endregion
 
     // public void CreateGUI()
     // {
@@ -195,7 +203,7 @@ public class PrefabPlacer : EditorWindow
         
         if (prefabs.Count > 0)
         {
-            
+            GUILayout.Label("Active Assets: " + (activeObjects), GUILayout.Width(assetNumSpacing * 5));
             for (int i = 0; i < prefabs.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -219,6 +227,7 @@ public class PrefabPlacer : EditorWindow
                     //Do enable tag on this prefab
                     toggles[i] = !toggles[i];
                     Debug.Log("Toggle Button: " + i + " set to: " + toggles[i] );
+                    CountActiveObjects();
                 }
 
                 prefabs[i] = (GameObject)EditorGUILayout.ObjectField(prefabs[i], typeof(GameObject), false, GUILayout.Width(gameObjectSpacing), GUILayout.ExpandWidth(true));
@@ -267,7 +276,9 @@ public class PrefabPlacer : EditorWindow
         
         Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
 
-        while (drawingPrefabs)
+        //TODO: REMOVE THE HUGE ERROR THAT OCCURS WHEN YOU CLICK THIS
+        
+        // while (drawingPrefabs)
         {
             Vector3 mousePosition = Event.current.mousePosition;
             Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
@@ -291,15 +302,52 @@ public class PrefabPlacer : EditorWindow
         
         prefabs.Add(null);
         toggles.Add(true);
+        
+        CountActiveObjects();
     }
 
     void RemoveObject(int position)
     {
+        //TODO: Add check for null objects, maybe a prune dead objects option
         prefabs.RemoveAt(position);
         toggles.RemoveAt(position);
+        CountActiveObjects();
     }
 
-    static void OnSceneGUI(SceneView sceneView)
+    void CountActiveObjects()
+    {
+        activeObjects = 0;
+
+        for (int i = 0; i < prefabs.Count; i++)
+        {
+            if (prefabs[i] == null) continue;
+
+            if (toggles[i] == true)
+            {
+                activeObjects++;
+            }
+        }
+    }
+
+    void OnSceneGUI(SceneView sceneView)
+    {
+        if (!drawingPrefabs) return;
+
+        if (prefabs.Count == 0)
+        {
+            Handles.Label(Vector3.zero, "No Prefabs Selected");
+            return;
+        }
+
+        if (activeObjects == 0)
+        {
+            Handles.Label(Vector3.zero, "No Active Prefabs");
+            return;
+        }
+        
+    }
+
+    private void Paint()
     {
         
     }
