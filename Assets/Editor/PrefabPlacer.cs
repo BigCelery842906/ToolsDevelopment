@@ -190,15 +190,22 @@ public class PrefabPlacer : EditorWindow
 
             while (prefabs.Count > numOfPrefabs)
             {
-                RemoveObject(prefabs.Count - 1);
+                RemoveNextObject();
             }
         }
         #endregion
 
+        EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("Add Prefab"))
         {
             AddNewObject();
         }
+
+        if (GUILayout.Button("Prune Null Prefabs"))
+        {
+            PruneObjects();
+        }
+        EditorGUILayout.EndHorizontal();
         
         //TODO: Probably worth being in a scrollview to be honest. Look into that: https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-uxml-element-ScrollView.html
         
@@ -306,10 +313,37 @@ public class PrefabPlacer : EditorWindow
 
     void RemoveObject(int position)
     {
-        //TODO: Add check for null objects, maybe a prune dead objects option
+        
         prefabs.RemoveAt(position);
         toggles.RemoveAt(position);
         CountActiveObjects();
+    }
+
+    void RemoveNextObject()
+    {   //TODO: Add check for null objects, maybe a prune dead objects option
+        if (!PruneNullObject())
+        
+        //If there are no null objects
+        RemoveObject(prefabs.Count - 1);
+    }
+
+    void PruneObjects()
+    {
+        while (PruneNullObject()) ;
+    }
+
+    bool PruneNullObject()
+    {
+        for (int i = 0; i < prefabs.Count; i++)
+        {
+            if (prefabs[i] == null)
+            {
+                RemoveObject(i);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void CountActiveObjects()
