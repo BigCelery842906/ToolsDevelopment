@@ -6,6 +6,7 @@ using UnityEditor.TerrainTools;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.UIElements;
+using Random = UnityEngine.Random;
 
 // Found tutorial here: https://medium.com/xrpractices/building-a-custom-editor-window-in-unity-5b8a1378e734
 // https://docs.unity3d.com/2022.3/Documentation//Manual/UIE-uxml-element-Button.html
@@ -248,7 +249,7 @@ public class PrefabPlacer : EditorWindow
         Color falseColour = Color.white;
         
         GUI.backgroundColor = drawingPrefabs ? trueColour : falseColour;
-        bool shouldPaint = GUILayout.Toggle(drawingPrefabs, "Enable Painting", "Button"); //Need to do the background colour change thing
+        bool shouldPaint = GUILayout.Toggle(drawingPrefabs, "Enable Painting", "Button");
         if (shouldPaint != drawingPrefabs)
         {
             OnDrawClick();
@@ -276,16 +277,13 @@ public class PrefabPlacer : EditorWindow
         
         Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
 
+        CountActiveObjects();
+        
         //TODO: REMOVE THE HUGE ERROR THAT OCCURS WHEN YOU CLICK THIS
         
         // while (drawingPrefabs)
         {
-            Vector3 mousePosition = Event.current.mousePosition;
-            Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
             
-            Vector3 pos = ray.origin + (ray.direction * 10);
-            
-            Debug.Log(ray + ": " + pos);
             // HandleUtility.GUIPointToWorldRay()
             // Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             // Debug.Log(mousePos);
@@ -333,24 +331,68 @@ public class PrefabPlacer : EditorWindow
     {
         if (!drawingPrefabs) return;
 
+        Ray ray = HandleUtility.GUIPointToWorldRay(new Vector2((sceneView.camera.pixelWidth / 2) - 50, sceneView.camera.pixelHeight / 2)); // -50 is to center the text a little bit
+        
         if (prefabs.Count == 0)
         {
-            Handles.Label(Vector3.zero, "No Prefabs Selected");
+            Handles.Label(ray.origin, "No Prefabs Selected");
             return;
         }
 
         if (activeObjects == 0)
         {
-            Handles.Label(Vector3.zero, "No Active Prefabs");
+            Handles.Label(ray.origin, "No Active Prefabs");
             return;
+        }
+        
+        Paint();
+        
+    }
+    
+    private void Paint()
+    {
+        // TODO: NEEDS COLLIDERS OTHERWISE IT DONT WORK 
+        Event e = Event.current;
+        Vector3 mousePosition = e.mousePosition;
+        Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
+            
+        Physics.Raycast(ray, out RaycastHit hit);
+        
+        Handles.color = Color.green;
+            
+        Debug.Log(ray + ": " + hit.point);
+        
+        Handles.DrawWireDisc(hit.point, hit.normal, brushSize);
+        
+        if ((e.type == EventType.MouseDown || e.type == EventType.MouseDrag) && e.button == 0 && !e.alt)
+        { //TODO: TEMP INSTANTIATION
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
+            instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
+            instance.transform.rotation = Quaternion.LookRotation(hit.normal);
+            
         }
         
     }
 
-    private void Paint()
+    private GameObject GetRandomPrefab()
     {
+        List<GameObject> activePrefabs = new List<GameObject>();
+
+        for (int i = 0; i < prefabs.Count; i++)
+        {
+            if (prefabs[i] == null) continue;
+
+            if (toggles[i])
+            {
+                activePrefabs.Add(prefabs[i]);
+            }
+        }
         
-    }
-    
+        int randomObject = Random.Range(0, activePrefabs.Count);
+
+        return activePrefabs[randomObject];
+
+        return null;
+    } 
     
 }
