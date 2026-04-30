@@ -369,7 +369,11 @@ public class PrefabPlacer : EditorWindow
             GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
             instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
             instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-            
+
+            if (randomRotation)
+            {
+                instance.transform.Rotate(0, Random.Range(0.0f, 360.0f), 0, Space.Self);
+            }
         }
         
     }
