@@ -368,7 +368,7 @@ public class PrefabPlacer : EditorWindow
         { //TODO: TEMP INSTANTIATION
             GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
             instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
-            instance.transform.rotation = Quaternion.LookRotation(hit.normal);
+            instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
             
         }
         
