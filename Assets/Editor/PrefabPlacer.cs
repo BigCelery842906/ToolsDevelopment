@@ -107,14 +107,14 @@ public class PrefabPlacer : EditorWindow
          brushSize = Mathf.Clamp(brushSize, 0.0f, 100.0f);
          
          minBrushAngle = EditorGUILayout.FloatField("Minimum Brush Angle", minBrushAngle);
-         minBrushAngle = (minBrushAngle + 360.0f) % 360.0f;
-         minBrushAngle = Mathf.Clamp(minBrushAngle, 0.0f, 360.0f);
+         // minBrushAngle = (minBrushAngle + 360.0f) % 720.0f;
+         minBrushAngle = Mathf.Clamp(minBrushAngle, -360.0f, 360.0f);
          
          maxBrushAngle = EditorGUILayout.FloatField("Maximum Brush Angle", maxBrushAngle);
-         maxBrushAngle = (maxBrushAngle + 360.0f) % 360.0f;
-         maxBrushAngle = Mathf.Clamp(maxBrushAngle, 0.0f, 360.0f);
+         // maxBrushAngle = (maxBrushAngle + 360.0f) % 720.0f;
+         maxBrushAngle = Mathf.Clamp(maxBrushAngle, -360.0f, 360.0f);
          
-        EditorGUILayout.MinMaxSlider("Brush Angle", ref minBrushAngle, ref maxBrushAngle, 0.0f, 360.0f);
+        EditorGUILayout.MinMaxSlider("Brush Angle", ref minBrushAngle, ref maxBrushAngle, -360.0f, 360.0f);
         
         // TODO: Figure out how I can do this such that it can go from somewhere like 270 to 30, where I want from 271 to 29 filled in, rather than the other way round.
         
@@ -255,6 +255,14 @@ public class PrefabPlacer : EditorWindow
         
         Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
 
+        if (minBrushAngle > maxBrushAngle)
+        {
+            float tempAngle = minBrushAngle;
+            minBrushAngle = maxBrushAngle;
+            maxBrushAngle = tempAngle;
+        }
+
+        
         CountActiveObjects();
     }
 
@@ -447,8 +455,6 @@ public class PrefabPlacer : EditorWindow
         int randomObject = Random.Range(0, activePrefabs.Count);
 
         return activePrefabs[randomObject];
-
-        return null;
     }
     
     GameObject GetParent()
