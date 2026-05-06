@@ -43,6 +43,9 @@ public class PrefabPlacer : EditorWindow
     
     // Values that can change
     private bool drawingPrefabs = false;
+    
+    private GameObject parent;
+    private string name = "Placed Prefabs";
 
 
     #region valuesForHorizontalSpacing
@@ -178,7 +181,7 @@ public class PrefabPlacer : EditorWindow
         #region Number of Prefabs
         int numOfPrefabs = prefabs.Count;
         numOfPrefabs = EditorGUILayout.IntField("Number of Prefabs", numOfPrefabs);
-        Mathf.Clamp(numOfPrefabs, 0, maxObjects);
+        numOfPrefabs = Mathf.Clamp(numOfPrefabs, 0, maxObjects);
         if (prefabs.Count != numOfPrefabs)
         {
             for (int i = prefabs.Count; i < numOfPrefabs; i++)
@@ -188,7 +191,7 @@ public class PrefabPlacer : EditorWindow
             //Where there are more prefabs in the prefabs list than in NumOfPrefabs, remove down to that amount.
             //Remove the last one in the list until the specified amount has been reached
 
-            while (prefabs.Count > numOfPrefabs)
+            for (int i = 0; i < (prefabs.Count - numOfPrefabs); i++)
             {
                 RemoveNextObject();
             }
@@ -206,6 +209,19 @@ public class PrefabPlacer : EditorWindow
             PruneObjects();
         }
         EditorGUILayout.EndHorizontal();
+        
+        
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Set all Enabled"))
+        {
+            SetAllToValue(true);
+        }
+        if (GUILayout.Button("Set all Disabled"))
+        {
+            SetAllToValue(false);
+        }
+        EditorGUILayout.EndHorizontal();
+        
         
         //TODO: Probably worth being in a scrollview to be honest. Look into that: https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-uxml-element-ScrollView.html
         
@@ -313,9 +329,18 @@ public class PrefabPlacer : EditorWindow
 
     void RemoveObject(int position)
     {
-        
+        if (position >= prefabs.Count || position < 0)
+        {
+            return;
+        }
         prefabs.RemoveAt(position);
         toggles.RemoveAt(position);
+        
+        if (prefabs.Count != toggles.Count)
+        {
+            Debug.LogError("List mismatch!");
+        }
+        
         CountActiveObjects();
     }
 
@@ -344,6 +369,15 @@ public class PrefabPlacer : EditorWindow
         }
 
         return false;
+    }
+
+    void SetAllToValue(bool value)
+    {
+        for (int i = 0; i < prefabs.Count; i++)
+        {
+            toggles[i] = value;
+        }
+        CountActiveObjects();
     }
 
     void CountActiveObjects()
@@ -400,16 +434,22 @@ public class PrefabPlacer : EditorWindow
         
         if ((e.type == EventType.MouseDown || e.type == EventType.MouseDrag) && e.button == 0 && !e.alt)
         { //TODO: TEMP INSTANTIATION
-            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
-            instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
-            instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-
-            if (randomRotation)
-            {
-                instance.transform.Rotate(0, Random.Range(0.0f, 360.0f), 0, Space.Self);
-            }
+            PlaceGameObject(ray, hit);
         }
         
+    }
+
+    void PlaceGameObject(Ray ray, RaycastHit hit)
+    {
+        GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
+        instance.transform.SetParent(GetParent().transform);
+        instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
+        instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+
+        if (randomRotation)
+        {
+            instance.transform.Rotate(0, Random.Range(0.0f, 360.0f), 0, Space.Self);
+        }
     }
 
     private GameObject GetRandomPrefab()
@@ -431,6 +471,23 @@ public class PrefabPlacer : EditorWindow
         return activePrefabs[randomObject];
 
         return null;
-    } 
+    }
+
+    
+    GameObject GetParent()
+    {
+        if (parent == null || parent.name != name)
+        {
+            parent = null;
+            parent = GameObject.Find(name);
+
+            if (parent == null)
+            {
+                parent = new GameObject(name);
+            }
+        }
+        
+        return parent;
+    }
     
 }
