@@ -21,7 +21,7 @@ public class PrefabPlacer : EditorWindow
     
     //TODO: Density of objects
     //TODO: Random Placement within brush size
-    //TODO: Angle of objects
+    //TODO: Angle of objects - DONE
     //TODO: Make both button of the prefab row equal
     //TODO: Maybe try get the normal without a collider
     //TODO: Delete last placed objects - DONE
@@ -378,6 +378,7 @@ public class PrefabPlacer : EditorWindow
         // Debug.Log(ray + ": " + hit.point);
         
         Handles.DrawWireDisc(hit.point, hit.normal, brushSize);
+        
         if (e.type == EventType.MouseDown && e.button == 0 && !e.alt)
         {
             GUIUtility.hotControl = controlID;
@@ -403,6 +404,7 @@ public class PrefabPlacer : EditorWindow
 
     void PlaceGameObject(Ray ray, RaycastHit hit)
     {
+        if (!CheckWithinRotation(ray, hit)) return;
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
         instance.transform.SetParent(GetParent().transform);
         instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
@@ -414,6 +416,18 @@ public class PrefabPlacer : EditorWindow
         }
         
         lastPlaced.Add(instance);
+    }
+
+    bool CheckWithinRotation(Ray ray, RaycastHit hit)
+    {
+        float angle = Vector3.Angle(hit.normal, Vector3.up);
+
+        if (angle < Mathf.Min(minBrushAngle, maxBrushAngle) || angle > Mathf.Max(minBrushAngle, maxBrushAngle))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private GameObject GetRandomPrefab()
@@ -464,6 +478,7 @@ public class PrefabPlacer : EditorWindow
         {
             DestroyImmediate(parent.transform.GetChild(i).gameObject);
         }
+        lastPlaced.Clear();
     }
     
 }
