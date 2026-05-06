@@ -26,10 +26,11 @@ public class PrefabPlacer : EditorWindow
     //TODO: Maybe try get the normal without a collider
     //TODO: Delete last placed objects - DONE
     //TODO: Layers that a prefab can be placed on
-    //TODO: Clear all placed objects
+    //TODO: Clear all placed objects - DONE
     //TODO: Gizmos for angle on which a prefab can be placed?
     //TODO: Stop the drag issue - DONE
     //TODO: Stop origin place if not hit anything
+    //TODO: Delete previous object - DONE
 
     private List<GameObject> prefabs = new List<GameObject>();
     private List<bool> toggles = new List<bool>();
@@ -165,9 +166,22 @@ public class PrefabPlacer : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("Delete Last Placed Object"))
+        {
+            DestroyLastPlacedObject();
+        }
+        if (GUILayout.Button("Delete all placed objects"))
+        {
+            DestroyAllPlacedObjects();
+        }
+        
+        
+        EditorGUILayout.EndHorizontal();
         if (lastPlaced.Count != 0)
         {
-            if (GUILayout.Button("Delete Last Placed"))
+            if (GUILayout.Button("Delete Last Placed Group"))
             {
 
                 for (int i = lastPlaced.Count-1; i >= 0; i--)
@@ -421,7 +435,6 @@ public class PrefabPlacer : EditorWindow
 
         return null;
     }
-
     
     GameObject GetParent()
     {
@@ -437,6 +450,19 @@ public class PrefabPlacer : EditorWindow
         }
         
         return parent;
+    }
+
+    void DestroyLastPlacedObject()
+    {
+        DestroyImmediate(GetParent().transform.GetChild(GetParent().transform.childCount-1).gameObject);
+    }
+    void DestroyAllPlacedObjects()
+    {
+        GameObject parent = GetParent();
+        for (int i = parent.transform.childCount - 1; i >= 0; i--)
+        {
+            DestroyImmediate(parent.transform.GetChild(i).gameObject);
+        }
     }
     
 }
