@@ -24,13 +24,17 @@ public class PrefabPlacer : EditorWindow
     //TODO: Angle of objects
     //TODO: Make both button of the prefab row equal
     //TODO: Maybe try get the normal without a collider
-    //TODO: Delete last placed objects
+    //TODO: Delete last placed objects - DONE
     //TODO: Layers that a prefab can be placed on
     //TODO: Clear all placed objects
     //TODO: Gizmos for angle on which a prefab can be placed?
+    //TODO: Stop the drag issue - DONE
+    //TODO: Stop origin place if not hit anything
 
     private List<GameObject> prefabs = new List<GameObject>();
     private List<bool> toggles = new List<bool>();
+    
+    private List<GameObject> lastPlaced = new List<GameObject>();
     private int activeObjects = 0;
 
     private int maxObjects = 50;
@@ -160,6 +164,19 @@ public class PrefabPlacer : EditorWindow
             SetAllToValue(false);
         }
         EditorGUILayout.EndHorizontal();
+
+        if (lastPlaced.Count != 0)
+        {
+            if (GUILayout.Button("Delete Last Placed"))
+            {
+
+                for (int i = lastPlaced.Count-1; i >= 0; i--)
+                {
+                    DestroyImmediate(lastPlaced[i]);
+                    lastPlaced.RemoveAt(i);
+                }
+            }
+        }
         
         if (prefabs.Count > 0)
         {
@@ -334,6 +351,7 @@ public class PrefabPlacer : EditorWindow
     private void Paint()
     {
         // TODO: NEEDS COLLIDERS OTHERWISE IT DONT WORK 
+        int controlID = GUIUtility.GetControlID(FocusType.Passive);
         Event e = Event.current;
         Vector3 mousePosition = e.mousePosition;
         Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
@@ -342,13 +360,28 @@ public class PrefabPlacer : EditorWindow
         
         Handles.color = Color.green;
             
-        Debug.Log(ray + ": " + hit.point);
+        // Debug.Log(ray + ": " + hit.point);
         
         Handles.DrawWireDisc(hit.point, hit.normal, brushSize);
-        
-        if ((e.type == EventType.MouseDown || e.type == EventType.MouseDrag) && e.button == 0 && !e.alt)
+        if (e.type == EventType.MouseDown && e.button == 0 && !e.alt)
+        {
+            GUIUtility.hotControl = controlID;
+            lastPlaced.Clear();
+            e.Use();
+        }
+
+        if (e.type == EventType.MouseDrag && GUIUtility.hotControl == controlID)
         {
             PlaceGameObject(ray, hit);
+            e.Use();
+        }
+
+        if (e.type == EventType.MouseUp && e.button == 0 && GUIUtility.hotControl == controlID)
+        {
+            GUIUtility.hotControl = 0;
+            e.Use();
+            
+            Debug.Log("Placed " + lastPlaced.Count + " objects in this stroke");
         }
         
     }
@@ -364,6 +397,8 @@ public class PrefabPlacer : EditorWindow
         {
             instance.transform.Rotate(0, Random.Range(0.0f, 360.0f), 0, Space.Self);
         }
+        
+        lastPlaced.Add(instance);
     }
 
     private GameObject GetRandomPrefab()
