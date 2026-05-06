@@ -22,7 +22,17 @@ public class PrefabPlacer : EditorWindow
     // Toggle for whether the GO will aim to match the normal of the object its being placed on - Might have to look into whether this is possible without loads of complex maths
     // Density of objects
     // Size of Brush
-
+    
+    
+    //TODO: Density of objects
+    //TODO: Random Placement within brush size
+    //TODO: Angle of objects
+    //TODO: Make both button of the prefab row equal
+    //TODO: Maybe try get the normal without a collider
+    //TODO: Delete last placed objects
+    //TODO: Layers that a prefab can be placed on
+    //TODO: Clear all placed objects
+    //TODO: Gizmos for angle on which a prefab can be placed?
 
     [SerializeField] private List<GameObject> prefabs = new List<GameObject>();
     [SerializeField] private List<bool> toggles = new List<bool>();
