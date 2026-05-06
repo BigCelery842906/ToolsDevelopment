@@ -1,11 +1,6 @@
-using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEditor;
-using UnityEditor.TerrainTools;
 using UnityEngine;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 // Found tutorial here: https://medium.com/xrpractices/building-a-custom-editor-window-in-unity-5b8a1378e734
@@ -34,22 +29,19 @@ public class PrefabPlacer : EditorWindow
     //TODO: Clear all placed objects
     //TODO: Gizmos for angle on which a prefab can be placed?
 
-    [SerializeField] private List<GameObject> prefabs = new List<GameObject>();
-    [SerializeField] private List<bool> toggles = new List<bool>();
+    private List<GameObject> prefabs = new List<GameObject>();
+    private List<bool> toggles = new List<bool>();
     private int activeObjects = 0;
 
     private int maxObjects = 50;
-    // [Range(0, 100f)] [SerializeField] private float brushSize;
     private float brushSize = 5f;
-
-    [Range(0.0f, 360.0f)] [SerializeField] private float minBrushAngle;
-    [Range(0.0f, 360.0f)] [SerializeField] private float maxBrushAngle;
-
-    [Range(0.0f, 100f)] [SerializeField] private float densityOfObjects;
+    
+    private float minBrushAngle; 
+    private float maxBrushAngle;
+    
+    private float densityOfObjects;
 
     private bool randomRotation = true;
-    
-    //TODO: Maybe a bool that determines whether the object follows the normal of the object? - Look into how that would work
     
     // Values that can change
     private bool drawingPrefabs = false;
@@ -93,69 +85,6 @@ public class PrefabPlacer : EditorWindow
         SceneView.duringSceneGui -= OnSceneGUI;
     }
     #endregion
-
-    // public void CreateGUI()
-    // {
-    //     // Each editor window contains a root VisualElement object
-    //     VisualElement root = rootVisualElement;
-    //
-    //     // VisualElements objects can contain other VisualElement following a tree hierarchy.
-    //     VisualElement label = new Label("Hello World! From C#");
-    //     root.Add(label);
-    //
-    //     // // Instantiate UXML
-    //     // VisualElement labelFromUXML = m_VisualTreeAsset.Instantiate();
-    //     // root.Add(labelFromUXML);
-    //     
-    //     
-    //     Button paintButton = new Button();
-    //     paintButton.name = "Paint Button";
-    //     paintButton.text = "Enable Painting";
-    //     paintButton.clicked += OnDrawClick;
-    //     root.Add(paintButton);
-    //
-    //     // SpaceAttribute(5.0f);
-    //
-    //     Toggle toggleButton = new Toggle();
-    //     toggleButton.name = "Toggle Toggle";
-    //     toggleButton.text = "Enable Toggle";
-    //     root.Add(toggleButton);
-    //     
-    //     var listView = new ListView(prefabs, 20, () => new Label(), (element, i) =>
-    //     {
-    //         (element as Label).text = prefabs[i] ? prefabs[i].name : "None";
-    //     });
-    //     root.Add(listView);
-    //     
-    //     
-    //     int removeIndex = -1;
-    //
-    //     for (int i = 0; i < prefabs.Count; i++)
-    //     {
-    //         EditorGUILayout.BeginHorizontal();
-    //         if (GUILayout.Button("X", GUILayout.Width(20)))
-    //             removeIndex = i;
-    //
-    //         if (GUILayout.Toggle(true, ""))
-    //         {
-    //             Debug.Log("Enabled");
-    //         }
-    //         prefabs[i] = (GameObject)EditorGUILayout.ObjectField(prefabs[i], typeof(GameObject), false);
-    //
-    //         
-    //
-    //         EditorGUILayout.EndHorizontal();
-    //     }
-    //
-    //     if (removeIndex >= 0)
-    //         prefabs.RemoveAt(removeIndex);
-    //
-    //     if (GUILayout.Button("Add Prefab"))
-    //         prefabs.Add(null);
-    //
-    //     GUILayout.Space(10);
-    //     
-    // }
 
     private void OnGUI()
     {
@@ -232,9 +161,6 @@ public class PrefabPlacer : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
         
-        
-        //TODO: Probably worth being in a scrollview to be honest. Look into that: https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-uxml-element-ScrollView.html
-        
         if (prefabs.Count > 0)
         {
             GUILayout.Label("Active Assets: " + (activeObjects), GUILayout.Width(assetNumSpacing * 5));
@@ -289,38 +215,16 @@ public class PrefabPlacer : EditorWindow
         }
         GUI.backgroundColor = Color.white; // Reset to default colour, otherwise it will draw with the true colour.
         
-        // This is used just to check that the gui stops drawing with the true colour
-        // if (GUILayout.Button("X", GUILayout.Width(20)))
-        // {
-        //     Debug.Log("Removing item:" + 1);
-        //     RemoveObject(1);
-        // }
         EditorGUILayout.EndScrollView();
     }
 
     void OnDrawClick()
     {
         drawingPrefabs = !drawingPrefabs;
-        //
-        // var button = rootVisualElement.Q<Button>("Button");
-        //
-        // Color trueColour = new Color32(70, 115, 105, 255);
-        // Color falseColour = new Color32(88, 88, 88, 255);
-        // button.style.backgroundColor = drawingPrefabs ? trueColour : falseColour;
         
         Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
 
         CountActiveObjects();
-        
-        //TODO: REMOVE THE HUGE ERROR THAT OCCURS WHEN YOU CLICK THIS
-        
-        // while (drawingPrefabs)
-        {
-            
-            // HandleUtility.GUIPointToWorldRay()
-            // Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            // Debug.Log(mousePos);
-        }
     }
 
     void AddNewObject()
@@ -355,7 +259,7 @@ public class PrefabPlacer : EditorWindow
     }
 
     void RemoveNextObject()
-    {   //TODO: Add check for null objects, maybe a prune dead objects option
+    {
         if (!PruneNullObject())
         
         //If there are no null objects
@@ -443,7 +347,7 @@ public class PrefabPlacer : EditorWindow
         Handles.DrawWireDisc(hit.point, hit.normal, brushSize);
         
         if ((e.type == EventType.MouseDown || e.type == EventType.MouseDrag) && e.button == 0 && !e.alt)
-        { //TODO: TEMP INSTANTIATION
+        {
             PlaceGameObject(ray, hit);
         }
         
