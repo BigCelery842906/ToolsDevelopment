@@ -29,7 +29,7 @@ public class PrefabPlacer : EditorWindow
     //TODO: Clear all placed objects - DONE
     //TODO: Gizmos for angle on which a prefab can be placed?
     //TODO: Stop the drag issue - DONE
-    //TODO: Stop origin place if not hit anything
+    //TODO: Stop origin place if not hit anything - DONE
     //TODO: Delete previous object - DONE
 
     private List<GameObject> prefabs = new List<GameObject>();
@@ -370,7 +370,8 @@ public class PrefabPlacer : EditorWindow
         Vector3 mousePosition = e.mousePosition;
         Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
             
-        Physics.Raycast(ray, out RaycastHit hit);
+        if (!Physics.Raycast(ray, out RaycastHit hit))
+            return; //Check if the ray hit anything
         
         Handles.color = Color.green;
             
