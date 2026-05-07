@@ -382,9 +382,8 @@ public class PrefabPlacer : EditorWindow
         Event e = Event.current;
         Vector3 mousePosition = e.mousePosition;
         Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
-            
-        if (!Physics.Raycast(ray, out RaycastHit hit))
-            return; //Check if the ray hit anything
+
+        Physics.Raycast(ray, out RaycastHit hit);
         
         Handles.color = Color.green;
             
@@ -401,7 +400,11 @@ public class PrefabPlacer : EditorWindow
 
         if (e.type == EventType.MouseDrag && GUIUtility.hotControl == controlID)
         {
-            PlaceGameObject(ray, hit);
+            if (hit.point != null)
+            {
+                PlaceGameObject(ray, hit);
+            }
+
             e.Use();
         }
 
