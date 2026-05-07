@@ -352,6 +352,7 @@ public class PrefabPlacer : EditorWindow
     {
         if (!drawingPrefabs) return;
 
+        SceneView.RepaintAll();
         Ray ray = HandleUtility.GUIPointToWorldRay(new Vector2((sceneView.camera.pixelWidth / 2) - 50, sceneView.camera.pixelHeight / 2)); // -50 is to center the text a little bit
         
         if (prefabs.Count == 0)
@@ -415,7 +416,8 @@ public class PrefabPlacer : EditorWindow
         if (!CheckWithinRotation(ray, hit)) return;
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
         instance.transform.SetParent(GetParent().transform);
-        instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
+        instance.transform.position = GetRandomPosition(hit.point);
+        // instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
         instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
         if (randomRotation)
@@ -485,6 +487,13 @@ public class PrefabPlacer : EditorWindow
             DestroyImmediate(parent.transform.GetChild(i).gameObject);
         }
         lastPlaced.Clear();
+    }
+
+    Vector3 GetRandomPosition(Vector3 hitPoint)
+    {
+        Vector2 randPoint = Random.insideUnitCircle * brushSize;
+        Vector3 randomPos = hitPoint + new Vector3(randPoint.x, 0, randPoint.y);
+        return randomPos;
     }
     
 }
