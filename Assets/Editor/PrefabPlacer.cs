@@ -20,7 +20,7 @@ public class PrefabPlacer : EditorWindow
     
     
     //TODO: Density of objects
-    //TODO: Random Placement within brush size
+    //TODO: Random Placement within brush size - DONE
     //TODO: Angle of objects - DONE
     //TODO: Make both button of the prefab row equal
     //TODO: Maybe try get the normal without a collider
@@ -41,8 +41,8 @@ public class PrefabPlacer : EditorWindow
     private int maxObjects = 50;
     private float brushSize = 5f;
     
-    private float minBrushAngle; 
-    private float maxBrushAngle;
+    private float minBrushAngle = -120.0f; 
+    private float maxBrushAngle = 120.0f;
     
     private float densityOfObjects;
 
@@ -75,11 +75,11 @@ public class PrefabPlacer : EditorWindow
         prefabPlacerWindow.minSize = new Vector2(minWidth, 100f);
         
         Texture icon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/icon.jpg");
-        prefabPlacerWindow.titleContent = new GUIContent("Prefab Placer Tool", icon);
+        prefabPlacerWindow.titleContent = new GUIContent("Prefab Placer Tool", icon, "Used for placing lots of prefabs/objects quickly, such as grass for terrain.");
         
     }
 
-    #region OnGUI
+    #region OnGUI Subscribers
     private void OnEnable()
     {
         SceneView.duringSceneGui += OnSceneGUI;
@@ -255,6 +255,7 @@ public class PrefabPlacer : EditorWindow
         
         Debug.Log("DRAW BUTTON CLICKED: Set to " + drawingPrefabs);
 
+        // Do a quick angle check
         if (minBrushAngle > maxBrushAngle)
         {
             float tempAngle = minBrushAngle;
@@ -266,6 +267,7 @@ public class PrefabPlacer : EditorWindow
         CountActiveObjects();
     }
 
+    #region Prefab Values Manipulation
     void AddNewObject()
     {
         if (prefabs.Count >= maxObjects) //Prevent stupid numbers from being reached
@@ -347,7 +349,9 @@ public class PrefabPlacer : EditorWindow
             }
         }
     }
+    #endregion
 
+    #region Object Painting
     void OnSceneGUI(SceneView sceneView)
     {
         if (!drawingPrefabs) return;
@@ -459,6 +463,15 @@ public class PrefabPlacer : EditorWindow
         return activePrefabs[randomObject];
     }
     
+    Vector3 GetRandomPosition(Vector3 hitPoint)
+    {
+        Vector2 randPoint = Random.insideUnitCircle * brushSize;
+        Vector3 randomPos = hitPoint + new Vector3(randPoint.x, 0, randPoint.y);
+        return randomPos;
+    }
+    #endregion
+
+    #region Placed Objects
     GameObject GetParent()
     {
         if (parent == null || parent.name != name)
@@ -479,6 +492,7 @@ public class PrefabPlacer : EditorWindow
     {
         DestroyImmediate(GetParent().transform.GetChild(GetParent().transform.childCount-1).gameObject);
     }
+    
     void DestroyAllPlacedObjects()
     {
         GameObject parent = GetParent();
@@ -488,12 +502,7 @@ public class PrefabPlacer : EditorWindow
         }
         lastPlaced.Clear();
     }
-
-    Vector3 GetRandomPosition(Vector3 hitPoint)
-    {
-        Vector2 randPoint = Random.insideUnitCircle * brushSize;
-        Vector3 randomPos = hitPoint + new Vector3(randPoint.x, 0, randPoint.y);
-        return randomPos;
-    }
+    #endregion
+    
     
 }
