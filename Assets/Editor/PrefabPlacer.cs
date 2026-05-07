@@ -92,8 +92,8 @@ public class PrefabPlacer : EditorWindow
     #endregion
 
     private void OnGUI()
-    {
-        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+    { // https://discussions.unity.com/t/how-to-disable-horizontal-scrollbar-in-guilayout-scroll-view/62439
+        scrollPos = GUILayout.BeginScrollView(scrollPos, false, false, GUIStyle.none, GUI.skin.verticalScrollbar);
         GUILayout.Label("Prefab Placer", EditorStyles.boldLabel);
         
         #region The Changeable Values
