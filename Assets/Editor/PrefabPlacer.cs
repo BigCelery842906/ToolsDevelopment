@@ -456,19 +456,20 @@ public class PrefabPlacer : EditorWindow
         return true;
     }
 
-    bool CheckSpacing(Vector3 hit)
+    bool CheckSpacing(Vector3 position)
     {
-        Collider[] potentialObjects = Physics.OverlapSphere(hit, densityOfObjects);
-        
-        for (int i = 0; i < potentialObjects.Length; i++)
+        Transform parentTransform = GetParent().transform;
+
+        for (int i = 0; i < parentTransform.childCount; i++)
         {
-            if (potentialObjects[i].transform.IsChildOf(GetParent().transform))
+            float distance = Vector3.Distance(parentTransform.GetChild(i).position, position);
+
+            if (distance < densityOfObjects)
             {
-                Debug.Log("There is no space");
                 return false;
             }
         }
-        Debug.Log("There is space");
+
         return true;
     }
 
