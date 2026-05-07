@@ -230,7 +230,7 @@ GameObject:
   - component: {fileID: 286302407}
   - component: {fileID: 286302406}
   - component: {fileID: 286302405}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Flat Surface
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -507,7 +507,7 @@ GameObject:
   - component: {fileID: 1220788445}
   - component: {fileID: 1220788444}
   - component: {fileID: 1220788443}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -835,8 +835,7 @@ PrefabInstance:
       propertyPath: m_Name
       value: Angled Surfaces
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 4665151273309290186, guid: ac0ecb9aab7e7344e8532a830821b4bf, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

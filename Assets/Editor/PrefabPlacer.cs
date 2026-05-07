@@ -19,13 +19,13 @@ public class PrefabPlacer : EditorWindow
     // Size of Brush
     
     
-    //TODO: Density of objects
+    //TODO: Density of objects - DONE
     //TODO: Random Placement within brush size - DONE
     //TODO: Angle of objects - DONE
     //TODO: Make both button of the prefab row equal - Semi done but definitely scummy
     //TODO: Maybe try get the normal without a collider
     //TODO: Delete last placed objects - DONE
-    //TODO: Layers that a prefab can be placed on
+    //TODO: Layers that a prefab can be placed on - DONE, but only for a single layer
     //TODO: Clear all placed objects - DONE
     //TODO: Gizmos for angle on which a prefab can be placed?
     //TODO: Stop the drag issue - DONE
@@ -37,6 +37,8 @@ public class PrefabPlacer : EditorWindow
     
     private List<GameObject> lastPlaced = new List<GameObject>();
     private List<List<GameObject>> placementGroups = new List<List<GameObject>>();
+
+    private LayerMask ableToPlaceLayer;
     
     private int activeObjects = 0;
 
@@ -111,6 +113,8 @@ public class PrefabPlacer : EditorWindow
          densityOfObjects = EditorGUILayout.FloatField("Density of Objects", densityOfObjects);
          densityOfObjects = Mathf.Clamp(densityOfObjects, 0.0f, 100.0f);
          
+         ableToPlaceLayer = EditorGUILayout.LayerField("Layers to place on",  ableToPlaceLayer);
+         
          minBrushAngle = EditorGUILayout.FloatField("Minimum Brush Angle", minBrushAngle);
          // minBrushAngle = (minBrushAngle + 360.0f) % 720.0f;
          minBrushAngle = Mathf.Clamp(minBrushAngle, -360.0f, 360.0f);
@@ -161,18 +165,18 @@ public class PrefabPlacer : EditorWindow
         
         
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button(" Set all Enabled  "))
+        if (GUILayout.Button(" Set All Enabled  "))
         {
             SetAllToValue(true);
         }
-        if (GUILayout.Button("Set all Disabled"))
+        if (GUILayout.Button("Set All Disabled"))
         {
             SetAllToValue(false);
         }
         EditorGUILayout.EndHorizontal();
         
         int childCount = GetParent().transform.childCount;
-        GUILayout.Label(childCount + " placed Objects");
+        GUILayout.Label(childCount + " Placed Objects");
 
         if (childCount != 0)
         {
@@ -183,7 +187,7 @@ public class PrefabPlacer : EditorWindow
                 DestroyLastPlacedObject();
             }
 
-            if (GUILayout.Button("Delete all placed objects"))
+            if (GUILayout.Button("Delete All Placed Objects"))
             {
                 DestroyAllPlacedObjects();
             }
@@ -438,7 +442,7 @@ public class PrefabPlacer : EditorWindow
     void PlaceGameObject(Ray ray, RaycastHit hit)
     {
         if (!CheckWithinRotation(ray, hit)) return;
-        
+        if (!CheckLayer(hit)) return;
         Vector3 spawnPos = GetRandomPosition(hit.point);
         
         if (!CheckSpacing(spawnPos)) return;
@@ -483,6 +487,16 @@ public class PrefabPlacer : EditorWindow
         }
 
         return true;
+    }
+
+    bool CheckLayer(RaycastHit hit)
+    {
+        if (hit.collider.gameObject.layer == ableToPlaceLayer)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private GameObject GetRandomPrefab()
