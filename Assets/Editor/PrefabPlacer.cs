@@ -36,6 +36,8 @@ public class PrefabPlacer : EditorWindow
     private List<bool> toggles = new List<bool>();
     
     private List<GameObject> lastPlaced = new List<GameObject>();
+    private List<List<GameObject>> placementGroups = new List<List<GameObject>>();
+    
     private int activeObjects = 0;
 
     private int maxObjects = 50;
@@ -168,33 +170,43 @@ public class PrefabPlacer : EditorWindow
             SetAllToValue(false);
         }
         EditorGUILayout.EndHorizontal();
-
-        EditorGUILayout.BeginHorizontal();
-
-        if (GUILayout.Button("Delete Last Placed Object"))
-        {
-            DestroyLastPlacedObject();
-        }
-        if (GUILayout.Button("Delete all placed objects"))
-        {
-            DestroyAllPlacedObjects();
-        }
         
-        
-        EditorGUILayout.EndHorizontal();
-        if (lastPlaced.Count != 0)
+        int childCount = GetParent().transform.childCount;
+        GUILayout.Label(childCount + " placed Objects");
+
+        if (childCount != 0)
         {
-            if (GUILayout.Button("Delete Last Placed Group"))
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Delete Last Placed Object"))
             {
+                DestroyLastPlacedObject();
+            }
 
-                for (int i = lastPlaced.Count-1; i >= 0; i--)
+            if (GUILayout.Button("Delete all placed objects"))
+            {
+                DestroyAllPlacedObjects();
+            }
+
+
+            EditorGUILayout.EndHorizontal();
+
+            if (lastPlaced.Count != 0)
+            {
+                if (GUILayout.Button("Delete Last Placed Group: " + lastPlaced.Count + " Objects"))
                 {
-                    DestroyImmediate(lastPlaced[i]);
-                    lastPlaced.RemoveAt(i);
+
+                    for (int i = lastPlaced.Count - 1; i >= 0; i--)
+                    {
+                        DestroyImmediate(lastPlaced[i]);
+                        lastPlaced.RemoveAt(i);
+                    }
+                    
+                    ReplaceLastPlacedList();
                 }
             }
         }
-        
+
         if (prefabs.Count > 0)
         {
             GUILayout.Label("Active Assets: " + (activeObjects) +"/" + maxObjects, GUILayout.Width(assetNumSpacing * 5));
@@ -399,7 +411,7 @@ public class PrefabPlacer : EditorWindow
         if (e.type == EventType.MouseDown && e.button == 0 && !e.alt)
         {
             GUIUtility.hotControl = controlID;
-            lastPlaced.Clear();
+            lastPlaced = new List<GameObject>();
             e.Use();
         }
 
@@ -417,7 +429,7 @@ public class PrefabPlacer : EditorWindow
         {
             GUIUtility.hotControl = 0;
             e.Use();
-            
+            placementGroups.Add(lastPlaced);
             Debug.Log("Placed " + lastPlaced.Count + " objects in this stroke");
         }
         
@@ -520,6 +532,11 @@ public class PrefabPlacer : EditorWindow
     void DestroyLastPlacedObject()
     {
         DestroyImmediate(GetParent().transform.GetChild(GetParent().transform.childCount-1).gameObject);
+
+        if (lastPlaced.Count == 0)
+        {
+            ReplaceLastPlacedList();
+        }
     }
     
     void DestroyAllPlacedObjects()
@@ -530,6 +547,21 @@ public class PrefabPlacer : EditorWindow
             DestroyImmediate(parent.transform.GetChild(i).gameObject);
         }
         lastPlaced.Clear();
+        placementGroups.Clear();
+    }
+
+    void ReplaceLastPlacedList()
+    {
+        placementGroups.RemoveAt(placementGroups.Count - 1);
+
+        if (placementGroups.Count > 0)
+        {
+            lastPlaced = placementGroups[placementGroups.Count - 1];
+        }
+        else
+        {
+            lastPlaced = new List<GameObject>();
+        }
     }
     #endregion
     
