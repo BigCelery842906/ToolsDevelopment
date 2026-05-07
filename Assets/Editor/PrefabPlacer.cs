@@ -22,7 +22,7 @@ public class PrefabPlacer : EditorWindow
     //TODO: Density of objects
     //TODO: Random Placement within brush size - DONE
     //TODO: Angle of objects - DONE
-    //TODO: Make both button of the prefab row equal
+    //TODO: Make both button of the prefab row equal - Semi done but definitely scummy
     //TODO: Maybe try get the normal without a collider
     //TODO: Delete last placed objects - DONE
     //TODO: Layers that a prefab can be placed on
@@ -106,6 +106,9 @@ public class PrefabPlacer : EditorWindow
          brushSize = EditorGUILayout.FloatField("Brush Size", brushSize);
          brushSize = Mathf.Clamp(brushSize, 0.0f, 100.0f);
          
+         densityOfObjects = EditorGUILayout.FloatField("Density of Objects", densityOfObjects);
+         densityOfObjects = Mathf.Clamp(densityOfObjects, 0.0f, 100.0f);
+         
          minBrushAngle = EditorGUILayout.FloatField("Minimum Brush Angle", minBrushAngle);
          // minBrushAngle = (minBrushAngle + 360.0f) % 720.0f;
          minBrushAngle = Mathf.Clamp(minBrushAngle, -360.0f, 360.0f);
@@ -143,7 +146,7 @@ public class PrefabPlacer : EditorWindow
         #endregion
 
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("Add Prefab"))
+        if (GUILayout.Button("       Add Prefab       "))
         {
             AddNewObject();
         }
@@ -156,7 +159,7 @@ public class PrefabPlacer : EditorWindow
         
         
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("Set all Enabled"))
+        if (GUILayout.Button(" Set all Enabled  "))
         {
             SetAllToValue(true);
         }
@@ -423,9 +426,13 @@ public class PrefabPlacer : EditorWindow
     void PlaceGameObject(Ray ray, RaycastHit hit)
     {
         if (!CheckWithinRotation(ray, hit)) return;
+        
+        Vector3 spawnPos = GetRandomPosition(hit.point);
+        
+        if (!CheckSpacing(spawnPos)) return;
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
         instance.transform.SetParent(GetParent().transform);
-        instance.transform.position = GetRandomPosition(hit.point); // TODO: Check if there is something here? If so, get a new normal
+        instance.transform.position = spawnPos; // TODO: Check if there is something here? If so, get a new normal
         // instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
         instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
@@ -446,6 +453,22 @@ public class PrefabPlacer : EditorWindow
             return false;
         }
 
+        return true;
+    }
+
+    bool CheckSpacing(Vector3 hit)
+    {
+        Collider[] potentialObjects = Physics.OverlapSphere(hit, densityOfObjects);
+        
+        for (int i = 0; i < potentialObjects.Length; i++)
+        {
+            if (potentialObjects[i].transform.IsChildOf(GetParent().transform))
+            {
+                Debug.Log("There is no space");
+                return false;
+            }
+        }
+        Debug.Log("There is space");
         return true;
     }
 
