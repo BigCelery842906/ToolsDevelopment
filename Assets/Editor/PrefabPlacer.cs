@@ -44,7 +44,7 @@ public class PrefabPlacer : EditorWindow
     private float minBrushAngle = -120.0f; 
     private float maxBrushAngle = 120.0f;
     
-    private float densityOfObjects;
+    private float densityOfObjects = 1;
 
     private bool randomRotation = true;
     
@@ -93,7 +93,7 @@ public class PrefabPlacer : EditorWindow
 
     private void OnGUI()
     { // https://discussions.unity.com/t/how-to-disable-horizontal-scrollbar-in-guilayout-scroll-view/62439
-        scrollPos = GUILayout.BeginScrollView(scrollPos, false, false, GUIStyle.none, GUI.skin.verticalScrollbar);
+        scrollPos = GUILayout.BeginScrollView(scrollPos,GUIStyle.none, GUI.skin.verticalScrollbar);
         GUILayout.Label("Prefab Placer", EditorStyles.boldLabel);
         
         #region The Changeable Values
@@ -194,7 +194,7 @@ public class PrefabPlacer : EditorWindow
         
         if (prefabs.Count > 0)
         {
-            GUILayout.Label("Active Assets: " + (activeObjects), GUILayout.Width(assetNumSpacing * 5));
+            GUILayout.Label("Active Assets: " + (activeObjects) +"/" + maxObjects, GUILayout.Width(assetNumSpacing * 5));
             for (int i = 0; i < prefabs.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -247,6 +247,8 @@ public class PrefabPlacer : EditorWindow
         GUI.backgroundColor = Color.white; // Reset to default colour, otherwise it will draw with the true colour.
         
         EditorGUILayout.EndScrollView();
+        
+        CountActiveObjects();
     }
 
     void OnDrawClick()
@@ -383,7 +385,7 @@ public class PrefabPlacer : EditorWindow
         Vector3 mousePosition = e.mousePosition;
         Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
 
-        Physics.Raycast(ray, out RaycastHit hit);
+        bool raycasthit = Physics.Raycast(ray, out RaycastHit hit);
         
         Handles.color = Color.green;
             
@@ -400,7 +402,7 @@ public class PrefabPlacer : EditorWindow
 
         if (e.type == EventType.MouseDrag && GUIUtility.hotControl == controlID)
         {
-            if (hit.point != null)
+            if (raycasthit)
             {
                 PlaceGameObject(ray, hit);
             }
@@ -423,7 +425,7 @@ public class PrefabPlacer : EditorWindow
         if (!CheckWithinRotation(ray, hit)) return;
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
         instance.transform.SetParent(GetParent().transform);
-        instance.transform.position = GetRandomPosition(hit.point);
+        instance.transform.position = GetRandomPosition(hit.point); // TODO: Check if there is something here? If so, get a new normal
         // instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
         instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
