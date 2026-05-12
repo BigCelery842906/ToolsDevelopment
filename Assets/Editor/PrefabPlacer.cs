@@ -78,8 +78,7 @@ public class PrefabPlacer : EditorWindow
         PrefabPlacer prefabPlacerWindow = GetWindow<PrefabPlacer>();
         prefabPlacerWindow.minSize = new Vector2(minWidth, 100f);
         
-        Texture icon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/icon.jpg");
-        prefabPlacerWindow.titleContent = new GUIContent("Prefab Placer Tool", icon, "Used for placing lots of prefabs/objects quickly, such as grass for terrain.");
+        prefabPlacerWindow.titleContent = new GUIContent("Prefab Placer Tool", "Used for placing lots of prefabs/objects quickly, such as grass for terrain, or for level decoration.");
         
     }
 
@@ -443,14 +442,15 @@ public class PrefabPlacer : EditorWindow
     {
         if (!CheckWithinRotation(ray, hit)) return;
         if (!CheckLayer(hit)) return;
-        Vector3 spawnPos = GetRandomPosition(hit.point);
+        if (!GetRandomPosition(hit, out Vector3 spawnPos, out Vector3 spawnNormal))
+        return;
         
         if (!CheckSpacing(spawnPos)) return;
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
         instance.transform.SetParent(GetParent().transform);
         instance.transform.position = spawnPos; // TODO: Check if there is something here? If so, get a new normal
         // instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
-        instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+        instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, spawnNormal);
 
         if (randomRotation)
         {
@@ -518,11 +518,24 @@ public class PrefabPlacer : EditorWindow
         return activePrefabs[randomObject];
     }
     
-    Vector3 GetRandomPosition(Vector3 hitPoint)
+    bool GetRandomPosition(RaycastHit originalHit, out Vector3 position, out Vector3 normal)
     {
         Vector2 randPoint = Random.insideUnitCircle * brushSize;
-        Vector3 randomPos = hitPoint + new Vector3(randPoint.x, 0, randPoint.y);
-        return randomPos;
+
+        Vector3 randPos = originalHit.point + (new Vector3(randPoint.x, 0, randPoint.y));
+
+        Vector3 origin = randPos + (Vector3.up);
+        Vector3 direction = -originalHit.normal;
+        
+        if (Physics.Raycast(origin, direction, out RaycastHit hit, 5f))
+        {
+            position = hit.point;
+            normal = hit.normal;
+            return true;
+        }
+        position = Vector3.zero;
+        normal = Vector3.zero;
+        return false;
     }
     #endregion
 
