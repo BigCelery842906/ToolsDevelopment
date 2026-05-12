@@ -1,9 +1,0 @@
-<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/Editor/PrefabPlacer.uss?fileID=7433441132597879392&amp;guid=3f7e6d87c98fbe640944d5b9d9cce343&amp;type=3#PrefabPlacer" />
-    <ui:VisualElement name="VisualElement" style="flex-grow: 1;">
-        <ui:DropdownField label="Dropdown" enabled="false" />
-        <ui:Toggle label="Toggle" />
-        <ui:TextField label="Text Field" placeholder-text="filler text" />
-        <ui:Button text="Draw Prefabs" />
-    </ui:VisualElement>
-</ui:UXML>
