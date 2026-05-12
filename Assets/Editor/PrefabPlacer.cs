@@ -27,10 +27,23 @@ public class PrefabPlacer : EditorWindow
     //TODO: Delete last placed objects - DONE
     //TODO: Layers that a prefab can be placed on - DONE, but only for a single layer
     //TODO: Clear all placed objects - DONE
-    //TODO: Gizmos for angle on which a prefab can be placed?
+    //TODO: Gizmos for angle on which a prefab can be placed? - Not sure I can rotate gizmos
     //TODO: Stop the drag issue - DONE
     //TODO: Stop origin place if not hit anything - DONE
     //TODO: Delete previous object - DONE
+    
+    //EXTRA
+    
+    // TODO: Weighted Values for placing prefabs
+    // TODO: Scale randomization - Look more natural for things like grass or trees - Shouldn't be that difficult - Have a drop down for each item - DONE
+    // TODO: Check normal for position in circle, stop objects floating on nothing - DONE
+    // TODO: Align to surface - Probably also per object
+    // TODO: Erase Mode - Get objects within radius of hit.point and delete
+    // TODO: Undo - so you can undo any deleting of items
+    // TODO: Brush Density instead of distance check
+    // TODO: Per Prefab Options - Dropdown?
+    // TODO: Collision Avoidance
+
 
     private List<GameObject> prefabs = new List<GameObject>();
     private List<bool> toggles = new List<bool>();
@@ -48,9 +61,12 @@ public class PrefabPlacer : EditorWindow
     private float minBrushAngle = -120.0f; 
     private float maxBrushAngle = 120.0f;
     
+    private float scaleDeviation = 0.5f;
+    
     private float densityOfObjects = 1;
 
     private bool randomRotation = true;
+    private bool randomScale = true;
     
     // Values that can change
     private bool drawingPrefabs = false;
@@ -114,6 +130,10 @@ public class PrefabPlacer : EditorWindow
          
          ableToPlaceLayer = EditorGUILayout.LayerField("Layers to place on",  ableToPlaceLayer);
          
+         scaleDeviation = EditorGUILayout.FloatField("Scale Deviation",scaleDeviation);
+         scaleDeviation = Mathf.Clamp(scaleDeviation, 0.0f, 1.0f);
+        
+         
          minBrushAngle = EditorGUILayout.FloatField("Minimum Brush Angle", minBrushAngle);
          // minBrushAngle = (minBrushAngle + 360.0f) % 720.0f;
          minBrushAngle = Mathf.Clamp(minBrushAngle, -360.0f, 360.0f);
@@ -124,9 +144,10 @@ public class PrefabPlacer : EditorWindow
          
         EditorGUILayout.MinMaxSlider("Brush Angle", ref minBrushAngle, ref maxBrushAngle, -360.0f, 360.0f);
         
-        // TODO: Figure out how I can do this such that it can go from somewhere like 270 to 30, where I want from 271 to 29 filled in, rather than the other way round.
+        
         
         randomRotation = EditorGUILayout.ToggleLeft("Random Rotation", randomRotation);
+        randomScale = EditorGUILayout.ToggleLeft("Random Scale", randomScale);
         #endregion
         
         
@@ -442,19 +463,23 @@ public class PrefabPlacer : EditorWindow
     {
         if (!CheckWithinRotation(ray, hit)) return;
         if (!CheckLayer(hit)) return;
-        if (!GetRandomPosition(hit, out Vector3 spawnPos, out Vector3 spawnNormal))
-        return;
-        
+        if (!GetRandomPosition(hit, out Vector3 spawnPos, out Vector3 spawnNormal)) return;
         if (!CheckSpacing(spawnPos)) return;
+        
+        
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(GetRandomPrefab());
         instance.transform.SetParent(GetParent().transform);
-        instance.transform.position = spawnPos; // TODO: Check if there is something here? If so, get a new normal
-        // instance.transform.position = hit.point; //TODO: This spawns half the object in the floor, look into making this not the case.
+        instance.transform.position = spawnPos; 
         instance.transform.rotation = Quaternion.FromToRotation(Vector3.up, spawnNormal);
 
         if (randomRotation)
         {
             instance.transform.Rotate(0, Random.Range(0.0f, 360.0f), 0, Space.Self);
+        }
+
+        if (randomScale)
+        {
+            instance.transform.localScale *= (1 + GetRandomScaleChange());
         }
         
         lastPlaced.Add(instance);
@@ -536,6 +561,15 @@ public class PrefabPlacer : EditorWindow
         position = Vector3.zero;
         normal = Vector3.zero;
         return false;
+    }
+
+    float GetRandomScaleChange()
+    {
+        float newScaleChange = Random.Range(0, scaleDeviation);
+        //If random number equals 1 set to positive change, else do negative
+        newScaleChange = Random.Range(0, 2) == 1 ? newScaleChange : -newScaleChange;
+        
+        return newScaleChange;
     }
     #endregion
 
